@@ -3,7 +3,7 @@ from pylab import *
 
 def fft_plot():
     f = 3 # hz
-    fs = 200.0 # sampling freq
+    fs = 2000.0 # sampling freq
 
     L = 128
 

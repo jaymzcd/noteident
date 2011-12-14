@@ -1,17 +1,14 @@
 import sys
-import matplotlib.pyplot as plt
-
-from matplotlib import cm
-from numpy import linspace, multiply
+from pylab import *
 from scikits.audiolab import Sndfile, play
 
-def get_ogg(f='src/one.ogg'):
+def get_ogg(f='src/emajor_piano.ogg'):
     return Sndfile(f)
 
 def snd_length(snd):
     return float(snd.nframes) / snd.samplerate
 
-def spec_plot(snd, start=0, end=1, fft_size=256):
+def spec_plot(snd, start=0, end=1, fft_size=512):
     total_length = snd_length(snd)
     sample_length = (end - start)
 
@@ -29,17 +26,31 @@ def spec_plot(snd, start=0, end=1, fft_size=256):
 
     time = linspace(start, end, frame_cnt)
 
-    plt.subplot(211)
-    spec = plt.specgram(left_channel, NFFT=fft_size,
+    # Spectrogram first
+    subplot(311)
+    spec = specgram(left_channel, NFFT=fft_size,
         xextent=(start, end), cmap=cm.Spectral, Fs=snd.samplerate,
         noverlap=256, pad_to=2048)
-    plt.title('Spectrogram [%d samples]' % frame_cnt)
+    title('Spectrogram [%d samples]' % frame_cnt)
 
-    plt.subplot(212)
-    plt.plot(time, left_channel)
-    plt.title('Time series (%0.2fs)' % sample_length)
+    # Plot the time series of this signal
+    subplot(312)
+    plot(time, left_channel)
+    title('Time series (%0.2fs)' % sample_length)
 
-    plt.show()
+    # Calcualte an FFT of this area only and plot proper freq
+    # access for analysis
+    N = 1024
+    fmax = snd.samplerate / 2
+    sig_ft = fftshift(abs(fft(left_channel, N)))
+    fscale = linspace(-fmax, fmax, N)
+
+    subplot(313)
+    mid = N/2
+    plot(fscale[mid:], sig_ft[mid:])
+    title('Frequency Domain (to %dHz)' % fmax)
+
+    show()
 
     return (time, left_channel, spec)
 
